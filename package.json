@@ -16,6 +16,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@antv/g6": "^4.8.22",
     "element-plus": "^2.3.14",
     "pinia": "^2.1.6",
     "pinia-plugin-persistedstate": "^3.2.0",
