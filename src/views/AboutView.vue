@@ -1,170 +1,127 @@
-<script setup>
-import G6 from '@antv/g6';
-import { onMounted } from 'vue';
+<script setup lang="ts">
+import { useDevclientStore } from "@/stores/dav";
+import type Node from 'element-plus/es/components/tree/src/model/node'
+import { type FileStat } from 'webdav'
+import { onMounted, reactive } from "vue";
 
-const data = {
-  id: 'A',
-  children: [
-    {
-      id: 'A1',
-      children: [{ id: 'A11' }, { id: 'A12' }, { id: 'A13' }, { id: 'A14' }],
-    },
-    {
-      id: 'A2',
-      children: [
-        {
-          id: 'A21',
-          children: [{ id: 'A211' }, { id: 'A212' }],
-        },
-        {
-          id: 'A22',
-        },
-      ],
-    },
-  ],
-};
+const storeDav = useDevclientStore()
+const state = reactive({
+  tableList: [] as FileStat[]
+})
 
-G6.registerNode('card-node', {
-  draw: function drawShape(cfg, group) {
-    const r = 2;
-    const color = '#5B8FF9';
-    const w = cfg.size[0];
-    const h = cfg.size[1];
-    const shape = group.addShape('rect', {
-      attrs: {
-        x: -w / 2,
-        y: -h / 2,
-        width: w, //200,
-        height: h, // 60
-        stroke: color,
-        radius: r,
-        fill: '#fff',
-      },
-      // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
-      name: 'main-box',
-      draggable: true,
-    });
+async function getDir(basedir: string) {
+  if (storeDav.client) {
+    const dir = await storeDav.client.getDirectoryContents(basedir) as FileStat[]
+    return dir
+  } else {
+    return []
+  }
+}
 
-    group.addShape('rect', {
-      attrs: {
-        x: -w / 2,
-        y: -h / 2,
-        width: w, //200,
-        height: h / 2, // 60
-        fill: color,
-        radius: [r, r, 0, 0],
-      },
-      // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
-      name: 'title-box',
-      draggable: true,
-    });
+onMounted(async () => {
+  state.tableList = await getDir('/')
+})
 
-    // title text
-    group.addShape('text', {
-      attrs: {
-        textBaseline: 'top',
-        x: -w / 2 + 8,
-        y: -h / 2 + 2,
-        lineHeight: 20,
-        text: cfg.id,
-        fill: '#fff',
-      },
-      // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
-      name: 'title',
-    });
-    cfg.children &&
-      group.addShape('marker', {
-        attrs: {
-          x: w / 2,
-          y: 0,
-          r: 6,
-          cursor: 'pointer',
-          symbol: cfg.collapsed ? G6.Marker.expand : G6.Marker.collapse,
-          stroke: '#666',
-          lineWidth: 1,
-          fill: '#fff',
-        },
-        // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
-        name: 'collapse-icon',
-      });
-    group.addShape('text', {
-      attrs: {
-        textBaseline: 'top',
-        x: -w / 2 + 8,
-        y: -h / 2 + 24,
-        lineHeight: 20,
-        text: 'description',
-        fill: 'rgba(0,0,0, 1)',
-      },
-      // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
-      name: `description`,
-    });
-    return shape;
-  },
-  setState(name, value, item) {
-    if (name === 'collapsed') {
-      const marker = item.get('group').find((ele) => ele.get('name') === 'collapse-icon');
-      const icon = value ? G6.Marker.expand : G6.Marker.collapse;
-      marker.attr('symbol', icon);
-    }
-  },
-});
+onMounted(async () => {
 
-onMounted(() => {
-  const graph = new G6.TreeGraph({
-    container: 'mountNode', // String | HTMLElement，必须，在 Step 1 中创建的容器 id 或容器本身
-    width: 800, // Number，必须，图的宽度
-    height: 500, // Number，必须，图的高度
-    modes: {
-      default: ['drag-canvas'],
-    },
-    defaultNode: {
-      type: 'card-node',
-      size: [100, 40],
-    },
-    defaultEdge: {
-      type: 'cubic-horizontal',
-      style: {
-        endArrow: true,
-      },
-    },
-    layout: {
-      type: 'indented',
-      direction: 'LR',
-      dropCap: false,
-      indent: 200,
-      getHeight: () => {
-        return 60;
-      },
-    },
-  });
+})
 
-  graph.data(data); // 读取 Step 2 中的数据源到图上
-  graph.render(); // 渲染图
-  graph.fitView();
-
-  graph.on('node:click', (e) => {
-    if (e.target.get('name') === 'collapse-icon') {
-      e.item.getModel().collapsed = !e.item.getModel().collapsed;
-      graph.setItemState(e.item, 'collapsed', e.item.getModel().collapsed);
-      graph.layout();
-    }
-  });
-});
 
 </script>
 
 <template>
-  <div id="mountNode">
+  <div class="file-tree-container">
+    <div class="file-tree-head">
+      坚果云
+    </div>
+    <ul class="file-list">
+      <li v-for="item in state.tableList" :key="item.basename">
+        <span class="folder-name">{{ item.basename }}</span>
+        <!-- <div class="file-tree-icon">
+          绘制向右的箭头
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path d="M384 192v640l384-320.064z">
+            </path>
+          </svg>
+        </div> -->
+      </li>
+    </ul>
   </div>
 </template>
 
-<style>
-@media (min-width: 1024px) {
-  .about {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-  }
+<style scoped>
+.file-tree-container {
+  width: 40vh;
+  height: 100vh;
+  background-color: #f4f7f9;
+}
+
+.file-tree-head {
+  width: 100%;
+  height: 40px;
+  padding: 10px;
+}
+
+.file-list,
+.file-list ul {
+  list-style-type: none;
+
+  border-left: 1px dotted #aaa;
+  line-height: 1.8em;
+  margin-left: 20px;
+  padding-left: 18px;
+}
+
+.file-list li span:before {
+  display: block;
+  content: ' ';
+  width: 10px;
+  height: 1px;
+  position: absolute;
+  border-bottom: 1px dotted #aaa;
+  top: 0.6em;
+  left: -14px;
+}
+
+.file-list li:before {
+  content: url('../assets/icons/folder_close.svg');
+  position: absolute;
+  top: 2px;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  font-size: 1.3em;
+  color: #555;
+}
+
+
+
+.file-list li {
+  position: relative;
+  padding-left: 25px;
+}
+
+.file-tree-item {
+  width: 100%;
+  height: 40px;
+  padding: 10px;
+  margin-left: 10px;
+}
+
+.file-tree-item:hover {
+  background-color: #E6ECF0;
+  cursor: pointer;
+}
+
+.file-tree-icon {
+  height: 1em;
+  width: 1em;
+  line-height: 1em;
+
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  position: relative;
 }
 </style>
