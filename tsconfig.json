@@ -9,6 +9,5 @@
     }
   ],
   "compilerOptions": {
-    "types": ["element-plus/global"]
   }
 }
