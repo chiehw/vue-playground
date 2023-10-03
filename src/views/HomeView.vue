@@ -36,6 +36,7 @@ function handleClick(row: FileStat) {
 </script>
 
 <template>
+  
   <div>
     <el-table :data="state.tableList">
       <el-table-column label="名称" prop="basename" width="300px"></el-table-column>

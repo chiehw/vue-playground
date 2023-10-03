@@ -1,58 +1,81 @@
 <script setup lang="ts">
 import { useDevclientStore } from "@/stores/dav";
-import type Node from 'element-plus/es/components/tree/src/model/node'
 import { type FileStat } from 'webdav'
 import { onMounted, reactive } from "vue";
 
+interface TreeNode {
+  fileState: FileStat,
+  isLeaf: boolean,
+  children: TreeNode[]
+}
+
 const storeDav = useDevclientStore()
 const state = reactive({
-  tableList: [] as FileStat[]
+  tableList: [] as TreeNode[]
 })
 
-async function getDir(basedir: string) {
+async function getDirectoryContents(basedir: string) {
   if (storeDav.client) {
-    const dir = await storeDav.client.getDirectoryContents(basedir) as FileStat[]
-    return dir
+    const dirList = await storeDav.client.getDirectoryContents(basedir, { deep: true }) as FileStat[]
+    dirList.map((fileItem) => { fileItem.filename = fileItem.filename.split('/..')[1] })
+    dirList.splice(0, 1)
+
+    let treeNodeList: TreeNode[] = []
+    for (let item of dirList) {
+      treeNodeList.push({
+        fileState: item,
+        isLeaf: false,
+        children: [] as TreeNode[]
+      })
+    }
+    return treeNodeList
   } else {
     return []
   }
 }
 
-onMounted(async () => {
-  state.tableList = await getDir('/')
-})
+async function getDirectoryContentsByNode(node: TreeNode) {
+  let dirList = await getDirectoryContents(node.fileState.filename)
+  node.children = dirList
+}
 
 onMounted(async () => {
-
+  state.tableList = await getDirectoryContents('/dav')
+  console.log(state.tableList);
 })
-
 
 </script>
 
 <template>
-  <div class="file-tree-container">
+  <h1 class="text-3xl font-bold underline">
+    Hello world!
+  </h1>
+  <!-- <div class="file-tree-container">
     <div class="file-tree-head">
       坚果云
     </div>
     <ul class="file-list">
-      <li v-for="item in state.tableList" :key="item.basename">
-        <span class="folder-name">{{ item.basename }}</span>
-        <!-- <div class="file-tree-icon">
-          绘制向右的箭头
-          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-            <path d="M384 192v640l384-320.064z">
-            </path>
-          </svg>
-        </div> -->
+      <li v-for="treeNode in state.tableList" :key="treeNode.fileState.filename"
+        @click="getDirectoryContentsByNode(treeNode)">
+        <span class="folder-name">{{ treeNode.fileState.basename }}</span>
+        <ul class="file-list">
+          <li v-for="child in treeNode.children" :key="child.fileState.basename"
+            @click="getDirectoryContentsByNode(child)">
+            <span class="folder-name">{{ child.fileState.basename }}</span>
+          </li>
+        </ul>
       </li>
     </ul>
-  </div>
+    
+
+  </div> -->
 </template>
 
 <style scoped>
 .file-tree-container {
   width: 40vh;
   height: 100vh;
+  overflow-y: scroll;
   background-color: #f4f7f9;
 }
 
@@ -60,6 +83,8 @@ onMounted(async () => {
   width: 100%;
   height: 40px;
   padding: 10px;
+
+  cursor: pointer;
 }
 
 .file-list,
@@ -84,44 +109,27 @@ onMounted(async () => {
 }
 
 .file-list li:before {
-  content: url('../assets/icons/folder_close.svg');
+  content: url('../assets/icons/folder-dark.svg');
+
   position: absolute;
   top: 2px;
   left: 0;
+
   width: 20px;
   height: 20px;
+
   font-size: 1.3em;
-  color: #555;
+  color: #656D75;
 }
-
-
 
 .file-list li {
   position: relative;
   padding-left: 25px;
+  margin-top: 4px;
+  margin-bottom: 4px;
 }
 
-.file-tree-item {
-  width: 100%;
-  height: 40px;
-  padding: 10px;
-  margin-left: 10px;
-}
-
-.file-tree-item:hover {
-  background-color: #E6ECF0;
+.file-list li:hover {
   cursor: pointer;
-}
-
-.file-tree-icon {
-  height: 1em;
-  width: 1em;
-  line-height: 1em;
-
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-
-  position: relative;
 }
 </style>

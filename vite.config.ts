@@ -16,7 +16,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://dav.jianguoyun.com/dav',
+        target: 'https://dav.jianguoyun.com',
         rewrite: (path) => path.replace(/^\/api/, ''),
         changeOrigin: true
       }
