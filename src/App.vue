@@ -1,14 +1,8 @@
 <script setup>
-const getFont = () => {
-  const font = document.querySelector('.logo')
-  font.style.fontFamily = 'Roboto'
-}
 </script>
 
 <template>
-  <button @click="getFont" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-    Button
-  </button>
+  <router-view></router-view>
 </template>
 
 <style scoped>
