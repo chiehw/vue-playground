@@ -21,6 +21,10 @@
     "noFallthroughCasesInSwitch": true,
 
     "noImplicitAny": false, // Ignore error of any
+    "baseUrl": ".", // Map File path
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.js"],
   "references": [{ "path": "./tsconfig.node.json" }]
