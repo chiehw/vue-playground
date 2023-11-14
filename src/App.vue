@@ -1,23 +1,22 @@
 <script setup>
+import MButton from '@/components/MButton.vue';
+
 </script>
 
 <template>
-  <router-view></router-view>
+  <main-container class="flex font-sans bg-slate-100">
+    <left-pane class="bg-white min-h-screen w-48 p-5">
+      <MButton @click="$router.push('/')">HOME</MButton>
+      <MButton @click="$router.push('/reactive')">Reactive</MButton>
+    </left-pane>
+    <right-pane class=" flex-1">
+      <router-view></router-view>
+    </right-pane>
+  </main-container>
 </template>
 
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+*+* {
+  margin-top: 1rem;
 }
 </style>
