@@ -4,8 +4,8 @@ import MButton from '@/components/MButton.vue';
 </script>
 
 <template>
-  <main-container class="flex font-sans bg-slate-100">
-    <left-pane class="bg-white min-h-screen w-48 p-5">
+  <main-container class="flex font-sans bg-white">
+    <left-pane class="bg-slate-100 min-h-screen w-1/6 p-5 space-y-3">
       <MButton @click="$router.push('/')">HOME</MButton>
       <MButton @click="$router.push('/reactive')">Reactive</MButton>
     </left-pane>
@@ -15,8 +15,4 @@ import MButton from '@/components/MButton.vue';
   </main-container>
 </template>
 
-<style scoped>
-*+* {
-  margin-top: 1rem;
-}
-</style>
+<style scoped></style>
